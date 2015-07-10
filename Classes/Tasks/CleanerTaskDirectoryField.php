@@ -65,7 +65,7 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface{
 			// build html for additional email field
 		$fieldName = $this->getFullFieldName('directoriesToClean');
 		$fieldId = 'task_' . $fieldName;
-		$fieldHtml = '<textarea ' . 'rows="10" cols="75" placeholder="' . $GLOBALS['LANG']->sL('LLL:EXT:minicleaner/locallang.xml:scheduler.placeholderText') . '" name="tx_scheduler[' . $fieldName . ']" ' . 'id="' . $fieldId . '" ' . '>' . htmlspecialchars($taskInfo[$fieldName]) . '</textarea>';
+		$fieldHtml = '<textarea class="form-control" rows="10" cols="75" placeholder="' . $GLOBALS['LANG']->sL('LLL:EXT:minicleaner/locallang.xml:scheduler.placeholderText') . '" name="tx_scheduler[' . $fieldName . ']" ' . 'id="' . $fieldId . '" ' . '>' . htmlspecialchars($taskInfo[$fieldName]) . '</textarea>';
 
 		$additionalFields = array();
 		$additionalFields[$fieldId] = array(
