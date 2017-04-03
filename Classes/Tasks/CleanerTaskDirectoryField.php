@@ -13,11 +13,10 @@ namespace SvenJuergens\Minicleaner\Tasks;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
+use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\AdditionalFieldProviderInterface;
 use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 /**
@@ -31,7 +30,7 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
      *
      * @var array
      */
-    protected $fields = array('directoriesToClean');
+    protected $fields = ['directoriesToClean'];
 
     /**
      * Field prefix.
@@ -57,7 +56,7 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
      */
     public function getAdditionalFields(array &$taskInfo, $task, SchedulerModuleController $schedulerModule)
     {
-        $fields = array('directoriesToClean' => 'textarea');
+        $fields = ['directoriesToClean' => 'textarea'];
         if ($schedulerModule->CMD == 'edit') {
             $taskInfo[$this->fieldPrefix . 'DirectoriesToClean'] = $task->getDirectoriesToClean();
         }
@@ -66,13 +65,13 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
         $fieldId = 'task_' . $fieldName;
         $fieldHtml = '<textarea class="form-control" rows="10" cols="75" placeholder="' . $GLOBALS['LANG']->sL('LLL:EXT:minicleaner/locallang.xml:scheduler.placeholderText') . '" name="tx_scheduler[' . $fieldName . ']" ' . 'id="' . $fieldId . '" ' . '>' . htmlspecialchars($taskInfo[$fieldName]) . '</textarea>';
 
-        $additionalFields = array();
-        $additionalFields[$fieldId] = array(
+        $additionalFields = [];
+        $additionalFields[$fieldId] = [
             'code' => $fieldHtml,
             'label' => $GLOBALS['LANG']->sL('LLL:EXT:minicleaner/locallang.xml:scheduler.fieldLabel'),
             'cshKey' => '',
             'cshLabel' => $fieldId
-        );
+        ];
 
         return $additionalFields;
     }
@@ -82,7 +81,7 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
      *
      * @param array $submittedData An array containing the data submitted by the add/edit task form
      * @param \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule Reference to the scheduler backend module
-     * @return boolean TRUE if validation was ok (or selected class is not relevant), FALSE otherwise
+     * @return bool TRUE if validation was ok (or selected class is not relevant), FALSE otherwise
      */
     public function validateAdditionalFields(array &$submittedData, SchedulerModuleController $schedulerModule)
     {

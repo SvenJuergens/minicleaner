@@ -13,10 +13,8 @@ namespace SvenJuergens\Minicleaner\Tasks;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
-
-use TYPO3\CMS\Scheduler\Task\AbstractTask;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 class CleanerTask extends AbstractTask
 {
@@ -32,8 +30,7 @@ class CleanerTask extends AbstractTask
      *
      * @var string
      */
-    protected $blackList = 'typo3,typo3conf,t3lib,typo3_src,typo3temp,uploads';
-
+    protected $blackList = 'typo3,typo3conf,typo3_src,typo3temp,uploads';
 
     public function execute()
     {
