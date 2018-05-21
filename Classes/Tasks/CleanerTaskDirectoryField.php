@@ -15,6 +15,7 @@ namespace SvenJuergens\Minicleaner\Tasks;
  */
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 use TYPO3\CMS\Scheduler\AdditionalFieldProviderInterface;
 use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
@@ -30,7 +31,10 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
      *
      * @var array
      */
-    protected $fields = ['directoriesToClean'];
+    protected $fields = ['
+        directoriesToClean,
+        advancedMode
+    '];
 
     /**
      * Field prefix.
@@ -40,39 +44,57 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
     protected $fieldPrefix = 'miniCleaner';
 
     /**
-     * BlackList of Diretories
+     * BlackList of Directories
      *
      * @var string
      */
-    protected $blackList = 'typo3,typo3conf,t3lib,typo3_src,typo3temp,uploads';
+    protected $blackList = 'typo3,typo3conf,typo3_src,typo3temp,uploads';
+
+    /**
+     *  path to LocallangFile
+     */
+    protected $LLLPath = 'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf';
 
     /**
      * Gets additional fields to render in the form to add/edit a task
      *
      * @param array $taskInfo Values of the fields from the add/edit task form
-     * @param \TYPO3\CMS\Scheduler\Task\AbstractTask $task The task object being edited. Null when adding a task!
-     * @param \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule Reference to the scheduler backend module
-     * @return array A two dimensional array, array('Identifier' => array('fieldId' => array('code' => '', 'label' => '', 'cshKey' => '', 'cshLabel' => ''))
+     * @param CleanerTask $task The task object being edited. Null when adding a task!
+     * @param \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule Reference
+     * to the scheduler backend module
+     * @return array A two dimensional array, array('Identifier' => array('fieldId' => array('code' => '',
+     * 'label' => '', 'cshKey' => '', 'cshLabel' => ''))
      */
     public function getAdditionalFields(array &$taskInfo, $task, SchedulerModuleController $schedulerModule)
     {
-        $fields = ['directoriesToClean' => 'textarea'];
-        if ($schedulerModule->CMD == 'edit') {
-            $taskInfo[$this->fieldPrefix . 'DirectoriesToClean'] = $task->getDirectoriesToClean();
+        $fields = [
+            'directoriesToClean' => 'textarea',
+            'advancedMode' => 'checkbox',
+        ];
+
+        if ((string)$schedulerModule->CMD === 'edit') {
+            $taskInfo[$this->getFullFieldName('directoriesToClean')] = $task->getDirectoriesToClean();
+            $taskInfo[$this->getFullFieldName('advancedMode')] = $task->isAdvancedMode();
+            $checked = $task->isAdvancedMode() === true ? 'checked="checked" ' : '';
+        } else {
+            $checked = '';
         }
             // build html for additional email field
         $fieldName = $this->getFullFieldName('directoriesToClean');
-        $fieldId = 'task_' . $fieldName;
-        $fieldHtml = '<textarea class="form-control" rows="10" cols="75" placeholder="' . $GLOBALS['LANG']->sL('LLL:EXT:minicleaner/locallang.xml:scheduler.placeholderText') . '" name="tx_scheduler[' . $fieldName . ']" ' . 'id="' . $fieldId . '" ' . '>' . htmlspecialchars($taskInfo[$fieldName]) . '</textarea>';
-
         $additionalFields = [];
-        $additionalFields[$fieldId] = [
-            'code' => $fieldHtml,
-            'label' => $GLOBALS['LANG']->sL('LLL:EXT:minicleaner/locallang.xml:scheduler.fieldLabel'),
+        $additionalFields[$fieldName] = [
+            'code' => '<textarea class="form-control" rows="10" cols="75" placeholder="' . $GLOBALS['LANG']->sL( $this->LLLPath . ':scheduler.placeholderText') . '" name="tx_scheduler[' . $fieldName . ']">' . htmlspecialchars($taskInfo[$fieldName]) . '</textarea>',
+            'label' => $GLOBALS['LANG']->sL($this->LLLPath . ':scheduler.fieldLabel'),
             'cshKey' => '',
-            'cshLabel' => $fieldId
+            'cshLabel' => $fieldName
         ];
-
+        $fieldNameCheckbox = $this->getFullFieldName('advancedMode');
+        $additionalFields[$fieldNameCheckbox] = [
+            'code' => '<input type="checkbox" name="tx_scheduler[' . $fieldNameCheckbox . ']" ' . $checked . '  />',
+            'label' => $GLOBALS['LANG']->sL($this->LLLPath . ':scheduler.fieldLabelAdvancedMode'),
+            'cshKey' => '_MOD_txminicleaner',
+            'cshLabel' => $fieldNameCheckbox
+        ];
         return $additionalFields;
     }
 
@@ -80,27 +102,29 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
      * Validates the additional fields' values
      *
      * @param array $submittedData An array containing the data submitted by the add/edit task form
-     * @param \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule Reference to the scheduler backend module
+     * @param \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule Reference
+     * to the scheduler backend module
      * @return bool TRUE if validation was ok (or selected class is not relevant), FALSE otherwise
      */
     public function validateAdditionalFields(array &$submittedData, SchedulerModuleController $schedulerModule)
     {
         $validInput = true;
-        $directoriesToClean = GeneralUtility::trimExplode(LF, $submittedData[$this->fieldPrefix . 'DirectoriesToClean'], true);
+        $directoriesToClean = GeneralUtility::trimExplode(
+            LF,
+            $submittedData[$this->fieldPrefix . 'DirectoriesToClean'],
+            true
+        );
         foreach ($directoriesToClean as $path) {
-            $path = trim($path, DIRECTORY_SEPARATOR);
-            if (!(strlen($path) > 0 && file_exists(PATH_site . $path)
-                && GeneralUtility::isAllowedAbsPath(PATH_site . $path)
-                && GeneralUtility::validPathStr($path)
-                && !GeneralUtility::inList($this->blackList, $path))
-            ) {
+            if (!$this->isValidPath($path, $submittedData)) {
                 $validInput = false;
                 break;
             }
         }
-        if (empty($submittedData[$this->fieldPrefix . 'DirectoriesToClean']) || $validInput === false) {
+        if ($validInput === false
+            || empty($submittedData[$this->getFullFieldName('directoriesToClean')])
+        ) {
             $schedulerModule->addMessage(
-                $GLOBALS['LANG']->sL('LLL:EXT:minicleaner/locallang.xml:error.pathNotValid'),
+                $GLOBALS['LANG']->sL($this->LLLPath . ':error.pathNotValid'),
                 FlashMessage::ERROR
             );
             $validInput = false;
@@ -118,9 +142,14 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
     public function saveAdditionalFields(array $submittedData, AbstractTask $task)
     {
         if (!$task instanceof CleanerTask) {
-            throw new \InvalidArgumentException('Expected a task of type SvenJuergens\\Minicleaner\\Tasks\\CleanerTask, but got ' . get_class($task), 1295012802);
+            throw new \InvalidArgumentException(
+                'Expected a task of type SvenJuergens\\Minicleaner\\Tasks\\CleanerTask,
+                 but got ' . htmlspecialchars(\get_class($task)),
+                1295012802
+            );
         }
-        $task->setDirectoriesToClean($submittedData[$this->fieldPrefix . 'DirectoriesToClean']);
+        $task->setDirectoriesToClean($submittedData[$this->getFullFieldName('directoriesToClean')]);
+        $task->setAvancedMode($submittedData[$this->getFullFieldName('advancedMode')]);
     }
 
     /**
@@ -132,5 +161,19 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
     protected function getFullFieldName($fieldName)
     {
         return $this->fieldPrefix . ucfirst($fieldName);
+    }
+
+    public function isValidPath($path, $submittedData)
+    {
+        $path = trim($path, DIRECTORY_SEPARATOR);
+        if ($submittedData[$this->getFullFieldName('advancedMode')]) {
+            return GeneralUtility::validPathStr($path);
+        }
+
+        return (\strlen($path) > 0 && file_exists(PATH_site . $path)
+            && GeneralUtility::isAllowedAbsPath(PATH_site . $path)
+            && GeneralUtility::validPathStr($path)
+            && !GeneralUtility::inList($this->blackList, $path)
+        );
     }
 }

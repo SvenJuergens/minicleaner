@@ -14,6 +14,7 @@ namespace SvenJuergens\Minicleaner\Tasks;
  * The TYPO3 project - inspiring people to share!
  */
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 class CleanerTask extends AbstractTask
@@ -23,7 +24,7 @@ class CleanerTask extends AbstractTask
      *
      * @var string
      */
-    protected $directoriesToClean = null;
+    protected $directoriesToClean;
 
     /**
      * BlackList of Diretories
@@ -32,26 +33,40 @@ class CleanerTask extends AbstractTask
      */
     protected $blackList = 'typo3,typo3conf,typo3_src,typo3temp,uploads';
 
+    /**
+     * advancedMode
+     *
+     * @var bool
+     */
+    protected $advancedMode = false;
+
+    /**
+     *  path to LocallangFile
+     */
+    protected $LLLPath = 'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf';
+
     public function execute()
     {
         $directories = GeneralUtility::trimExplode(LF, $this->directoriesToClean, true);
 
-        if (is_array($directories)) {
+        if (\is_array($directories)) {
             foreach ($directories as $key => $directory) {
-                $path = PATH_site . trim($directory, DIRECTORY_SEPARATOR);
-                if ($path != PATH_site
-                    && file_exists($path)
-                    && GeneralUtility::isAllowedAbsPath($path)
-                    && GeneralUtility::validPathStr($path)
-                    && !GeneralUtility::inList($this->blackList, $path)
-                ) {
-                    $result = GeneralUtility::flushDirectory($path, true);
+                if ($this->isValidPath($directory)) {
+                    $result = GeneralUtility::flushDirectory($directory, true);
                     if ($result === false) {
-                        GeneralUtility::devLog($GLOBALS['LANG']->sL('LLL:EXT:minicleaner/locallang.xml:error.couldNotFlushDirectory'), 'minicleaner', 3);
+                        GeneralUtility::devLog(
+                            $GLOBALS['LANG']->sL($this->LLLPath . ':error.couldNotFlushDirectory'),
+                            'minicleaner',
+                            3
+                        );
                         return false;
                     }
                 } else {
-                    GeneralUtility::devLog($GLOBALS['LANG']->sL('LLL:EXT:minicleaner/locallang.xml:error.pathNotFound'), 'minicleaner', 3);
+                    GeneralUtility::devLog(
+                        $GLOBALS['LANG']->sL($this->LLLPath . ':error.pathNotFound'),
+                        'minicleaner',
+                        3
+                    );
                     return false;
                 }
             }
@@ -78,5 +93,33 @@ class CleanerTask extends AbstractTask
     public function setDirectoriesToClean($directoriesToClean)
     {
         $this->directoriesToClean = $directoriesToClean;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAdvancedMode()
+    {
+        return $this->advancedMode;
+    }
+    /**
+     * @param bool $advancedMode
+     */
+    public function setAvancedMode($advancedMode)
+    {
+        $this->advancedMode = (bool)$advancedMode;
+    }
+
+    public function isValidPath($path)
+    {
+        $path = trim($path, DIRECTORY_SEPARATOR);
+        if ($this->isAdvancedMode()) {
+            return GeneralUtility::validPathStr($path);
+        }
+        return (\strlen($path) > 0 && file_exists(PATH_site . $path)
+            && GeneralUtility::isAllowedAbsPath(PATH_site . $path)
+            && GeneralUtility::validPathStr($path)
+            && !GeneralUtility::inList($this->blackList, $path)
+        );
     }
 }

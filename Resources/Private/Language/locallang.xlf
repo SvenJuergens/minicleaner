@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2018-05-21T20:02:07Z" product-name="minicleaner">
+		<header/>
+		<body>
+			<trans-unit id="minicleaner.name" xml:space="preserve">
+				<source>Mini Cleaner</source>
+			</trans-unit>
+			<trans-unit id="minicleaner.description" xml:space="preserve">
+				<source>Delete files in configurable folders</source>
+			</trans-unit>
+			<trans-unit id="scheduler.placeholderText" xml:space="preserve">
+				<source>uploads/myExtenison</source>
+			</trans-unit>
+			<trans-unit id="scheduler.fieldLabel" xml:space="preserve">
+				<source>Directories to flush (one per line)</source>
+			</trans-unit>
+			<trans-unit id="scheduler.fieldLabelAdvancedMode" xml:space="preserve">
+				<source>AdvancedMode (at your own risk)</source>
+			</trans-unit>
+			<trans-unit id="error.couldNotFlushDirectory" xml:space="preserve">
+				<source>could'nt delete files and folders</source>
+			</trans-unit>
+			<trans-unit id="error.pathNotFound" xml:space="preserve">
+				<source>Path not found or invalid</source>
+			</trans-unit>
+			<trans-unit id="error.pathNotValid" xml:space="preserve">
+				<source>Path invalid or on blacklist.</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>
