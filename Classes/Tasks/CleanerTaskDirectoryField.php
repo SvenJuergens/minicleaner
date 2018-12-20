@@ -15,14 +15,12 @@ namespace SvenJuergens\Minicleaner\Tasks;
  */
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 use TYPO3\CMS\Scheduler\AdditionalFieldProviderInterface;
 use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 /**
  * Original TASK taken from EXT:reports
- *
  */
 class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
 {
@@ -79,11 +77,11 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
         } else {
             $checked = '';
         }
-            // build html for additional email field
+        // build html for additional email field
         $fieldName = $this->getFullFieldName('directoriesToClean');
         $additionalFields = [];
         $additionalFields[$fieldName] = [
-            'code' => '<textarea class="form-control" rows="10" cols="75" placeholder="' . $GLOBALS['LANG']->sL( $this->LLLPath . ':scheduler.placeholderText') . '" name="tx_scheduler[' . $fieldName . ']">' . htmlspecialchars($taskInfo[$fieldName]) . '</textarea>',
+            'code' => '<textarea class="form-control" rows="10" cols="75" placeholder="' . $GLOBALS['LANG']->sL($this->LLLPath . ':scheduler.placeholderText') . '" name="tx_scheduler[' . $fieldName . ']">' . htmlspecialchars($taskInfo[$fieldName]) . '</textarea>',
             'label' => $GLOBALS['LANG']->sL($this->LLLPath . ':scheduler.fieldLabel'),
             'cshKey' => '',
             'cshLabel' => $fieldName
@@ -137,7 +135,6 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
      *
      * @param array $submittedData An array containing the data submitted by the add/edit task form
      * @param \TYPO3\CMS\Scheduler\Task\AbstractTask $task Reference to the scheduler backend module
-     * @return void
      */
     public function saveAdditionalFields(array $submittedData, AbstractTask $task)
     {
@@ -170,10 +167,10 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
             return GeneralUtility::validPathStr($path);
         }
 
-        return (\strlen($path) > 0 && file_exists(PATH_site . $path)
+        return $path !== '' && file_exists(PATH_site . $path)
             && GeneralUtility::isAllowedAbsPath(PATH_site . $path)
             && GeneralUtility::validPathStr($path)
             && !GeneralUtility::inList($this->blackList, $path)
-        );
+        ;
     }
 }

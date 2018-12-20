@@ -13,8 +13,9 @@ namespace SvenJuergens\Minicleaner\Tasks;
  *
  * The TYPO3 project - inspiring people to share!
  */
+
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 class CleanerTask extends AbstractTask
@@ -27,7 +28,7 @@ class CleanerTask extends AbstractTask
     protected $directoriesToClean;
 
     /**
-     * BlackList of Diretories
+     * BlackList of Directories
      *
      * @var string
      */
@@ -52,20 +53,19 @@ class CleanerTask extends AbstractTask
         if (\is_array($directories)) {
             foreach ($directories as $key => $directory) {
                 if ($this->isValidPath($directory)) {
-                    $result = GeneralUtility::flushDirectory($directory, true);
+                    $path = $this->getAbsolutePath($directory);
+                    $result = GeneralUtility::flushDirectory($path, true);
                     if ($result === false) {
-                        GeneralUtility::devLog(
+                        trigger_error(
                             $GLOBALS['LANG']->sL($this->LLLPath . ':error.couldNotFlushDirectory'),
-                            'minicleaner',
-                            3
+                            E_USER_DEPRECATED
                         );
                         return false;
                     }
                 } else {
-                    GeneralUtility::devLog(
+                    trigger_error(
                         $GLOBALS['LANG']->sL($this->LLLPath . ':error.pathNotFound'),
-                        'minicleaner',
-                        3
+                        E_USER_DEPRECATED
                     );
                     return false;
                 }
@@ -88,7 +88,6 @@ class CleanerTask extends AbstractTask
      * Sets the directories to clean.
      *
      * @param string $directoriesToClean directories to clean.
-     * @return void
      */
     public function setDirectoriesToClean($directoriesToClean)
     {
@@ -116,10 +115,21 @@ class CleanerTask extends AbstractTask
         if ($this->isAdvancedMode()) {
             return GeneralUtility::validPathStr($path);
         }
-        return (\strlen($path) > 0 && file_exists(PATH_site . $path)
+        return $path !== '' && file_exists(PATH_site . $path)
             && GeneralUtility::isAllowedAbsPath(PATH_site . $path)
             && GeneralUtility::validPathStr($path)
             && !GeneralUtility::inList($this->blackList, $path)
-        );
+        ;
+    }
+
+    public function getAbsolutePath($path)
+    {
+        if ($this->isAdvancedMode()) {
+            return $path;
+        }
+        if (class_exists(Environment::class)) {
+            return Environment::getPublicPath() . DIRECTORY_SEPARATOR . trim($path, DIRECTORY_SEPARATOR);
+        }
+        return PATH_site . $path;
     }
 }
