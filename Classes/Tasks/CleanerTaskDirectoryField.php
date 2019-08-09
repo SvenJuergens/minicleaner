@@ -17,14 +17,15 @@ namespace SvenJuergens\Minicleaner\Tasks;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Scheduler\AdditionalFieldProviderInterface;
+use TYPO3\CMS\Scheduler\AbstractAdditionalFieldProvider;
 use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
+use TYPO3\CMS\Scheduler\Task\Enumeration\Action;
 
 /**
  * Original TASK taken from EXT:reports
  */
-class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
+class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
 {
     /**
      * Additional fields
@@ -71,8 +72,8 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
             'directoriesToClean' => 'textarea',
             'advancedMode' => 'checkbox',
         ];
-
-        if ((string)$schedulerModule->CMD === 'edit') {
+        $currentSchedulerModuleAction = $schedulerModule->getCurrentAction();
+        if ((string)$currentSchedulerModuleAction === Action::EDIT) {
             $taskInfo[$this->getFullFieldName('directoriesToClean')] = $task->getDirectoriesToClean();
             $taskInfo[$this->getFullFieldName('advancedMode')] = $task->isAdvancedMode();
             $checked = $task->isAdvancedMode() === true ? 'checked="checked" ' : '';
@@ -123,7 +124,8 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
         if ($validInput === false
             || empty($submittedData[$this->getFullFieldName('directoriesToClean')])
         ) {
-            $schedulerModule->addMessage(
+            //@extensionScannerIgnoreLine
+            $this->addMessage(
                 $GLOBALS['LANG']->sL($this->LLLPath . ':error.pathNotValid'),
                 FlashMessage::ERROR
             );
