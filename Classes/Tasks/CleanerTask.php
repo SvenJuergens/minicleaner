@@ -115,8 +115,9 @@ class CleanerTask extends AbstractTask
         if ($this->isAdvancedMode()) {
             return GeneralUtility::validPathStr($path);
         }
-        return $path !== '' && file_exists(PATH_site . $path)
-            && GeneralUtility::isAllowedAbsPath(PATH_site . $path)
+        $pathSite = Environment::getPublicPath() . '/';
+        return $path !== '' && file_exists($pathSite . $path)
+            && GeneralUtility::isAllowedAbsPath($pathSite . $path)
             && GeneralUtility::validPathStr($path)
             && !GeneralUtility::inList($this->blackList, $path)
         ;
@@ -130,6 +131,6 @@ class CleanerTask extends AbstractTask
         if (class_exists(Environment::class)) {
             return Environment::getPublicPath() . DIRECTORY_SEPARATOR . trim($path, DIRECTORY_SEPARATOR);
         }
-        return PATH_site . $path;
+        return Environment::getPublicPath() . '/' . $path;
     }
 }

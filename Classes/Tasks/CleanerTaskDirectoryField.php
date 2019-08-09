@@ -13,6 +13,8 @@ namespace SvenJuergens\Minicleaner\Tasks;
  *
  * The TYPO3 project - inspiring people to share!
  */
+
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\AdditionalFieldProviderInterface;
@@ -166,9 +168,9 @@ class CleanerTaskDirectoryField implements AdditionalFieldProviderInterface
         if ($submittedData[$this->getFullFieldName('advancedMode')]) {
             return GeneralUtility::validPathStr($path);
         }
-
-        return $path !== '' && file_exists(PATH_site . $path)
-            && GeneralUtility::isAllowedAbsPath(PATH_site . $path)
+        $pathSite = Environment::getPublicPath() . '/';
+        return $path !== '' && file_exists($pathSite . $path)
+            && GeneralUtility::isAllowedAbsPath($pathSite . $path)
             && GeneralUtility::validPathStr($path)
             && !GeneralUtility::inList($this->blackList, $path)
         ;
