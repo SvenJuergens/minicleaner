@@ -34,7 +34,7 @@ class CleanerTask extends AbstractTask
      *
      * @var string
      */
-    protected $blackList = 'typo3,typo3conf,typo3_src,typo3temp,uploads';
+    protected $blockList = 'typo3,typo3conf,typo3_src,typo3temp,uploads';
 
     /**
      * advancedMode
@@ -119,7 +119,7 @@ class CleanerTask extends AbstractTask
         return $path !== '' && file_exists($pathSite . $path)
             && GeneralUtility::isAllowedAbsPath($pathSite . $path)
             && GeneralUtility::validPathStr($path)
-            && !GeneralUtility::inList($this->blackList, $path)
+            && !GeneralUtility::inList($this->blockList, $path)
         ;
     }
 
