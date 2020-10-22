@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 namespace SvenJuergens\Minicleaner\Tasks;
 
 /**
@@ -26,7 +28,7 @@ use TYPO3\CMS\Scheduler\Task\Enumeration\Action;
 /**
  * Original TASK taken from EXT:reports
  */
-class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
+class CleanerTaskDirectoryField extends AbstractAdditionalFieldProvider
 {
     /**
      * Additional fields
@@ -52,24 +54,20 @@ class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
      */
     protected $blockList = 'typo3,typo3conf,typo3_src,typo3temp,uploads';
 
-
     /**
      * Gets additional fields to render in the form to add/edit a task
      *
      * @param array $taskInfo Values of the fields from the add/edit task form
      * @param CleanerTask $task The task object being edited. Null when adding a task!
-     * @param \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule Reference
+     * @param SchedulerModuleController $schedulerModule Reference
      * to the scheduler backend module
      * @return array A two dimensional array, array('Identifier' => array('fieldId' => array('code' => '',
      * 'label' => '', 'cshKey' => '', 'cshLabel' => ''))
      */
-    public function getAdditionalFields(array &$taskInfo, $task, SchedulerModuleController $schedulerModule)
+    public function getAdditionalFields(array &$taskInfo, $task, SchedulerModuleController $schedulerModule): array
     {
-        $fields = [
-            'directoriesToClean' => 'textarea',
-            'advancedMode' => 'checkbox',
-        ];
         $currentSchedulerModuleAction = $schedulerModule->getCurrentAction();
+
         if ((string)$currentSchedulerModuleAction === Action::EDIT) {
             $taskInfo[$this->getFullFieldName('directoriesToClean')] = $task->getDirectoriesToClean();
             $taskInfo[$this->getFullFieldName('advancedMode')] = $task->isAdvancedMode();
@@ -100,11 +98,11 @@ class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
      * Validates the additional fields' values
      *
      * @param array $submittedData An array containing the data submitted by the add/edit task form
-     * @param \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule Reference
+     * @param SchedulerModuleController $schedulerModule Reference
      * to the scheduler backend module
      * @return bool TRUE if validation was ok (or selected class is not relevant), FALSE otherwise
      */
-    public function validateAdditionalFields(array &$submittedData, SchedulerModuleController $schedulerModule)
+    public function validateAdditionalFields(array &$submittedData, SchedulerModuleController $schedulerModule): bool
     {
         $validInput = true;
         $directoriesToClean = GeneralUtility::trimExplode(
@@ -123,8 +121,9 @@ class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
         ) {
             //@extensionScannerIgnoreLine
             $this->addMessage(
-               $this->getLanguageService()->sL(
-                   'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.pathNotValid'),
+                $this->getLanguageService()->sL(
+                   'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.pathNotValid'
+               ),
                 FlashMessage::ERROR
             );
             $validInput = false;
@@ -136,9 +135,9 @@ class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
      * Takes care of saving the additional fields' values in the task's object
      *
      * @param array $submittedData An array containing the data submitted by the add/edit task form
-     * @param \TYPO3\CMS\Scheduler\Task\AbstractTask $task Reference to the scheduler backend module
+     * @param AbstractTask $task Reference to the scheduler backend module
      */
-    public function saveAdditionalFields(array $submittedData, AbstractTask $task)
+    public function saveAdditionalFields(array $submittedData, AbstractTask $task): void
     {
         if (!$task instanceof CleanerTask) {
             throw new \InvalidArgumentException(
@@ -147,8 +146,8 @@ class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
                 1295012802
             );
         }
-        $task->setDirectoriesToClean($submittedData[$this->getFullFieldName('directoriesToClean')]);
-        $task->setAvancedMode($submittedData[$this->getFullFieldName('advancedMode')]);
+        $task->setDirectoriesToClean((string)$submittedData[$this->getFullFieldName('directoriesToClean')]);
+        $task->setAdvancedMode((bool)$submittedData[$this->getFullFieldName('advancedMode')]);
     }
 
     /**
@@ -157,12 +156,12 @@ class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
      * @param string $fieldName A raw field name
      * @return string Field name ready to use in HTML markup
      */
-    protected function getFullFieldName($fieldName)
+    protected function getFullFieldName($fieldName): string
     {
         return $this->fieldPrefix . ucfirst($fieldName);
     }
 
-    public function isValidPath($path, $submittedData)
+    public function isValidPath($path, $submittedData): bool
     {
         $path = trim($path, DIRECTORY_SEPARATOR);
         if ($submittedData[$this->getFullFieldName('advancedMode')]) {

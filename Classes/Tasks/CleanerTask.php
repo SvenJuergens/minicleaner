@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SvenJuergens\Minicleaner\Tasks;
 
 /**
@@ -44,7 +47,7 @@ class CleanerTask extends AbstractTask
     protected $advancedMode = false;
 
     /**
-     *  path to LocallangFile
+     * @return bool
      */
     public function execute(): bool
     {
@@ -79,7 +82,7 @@ class CleanerTask extends AbstractTask
      *
      * @return string directories to clean.
      */
-    public function getDirectoriesToClean()
+    public function getDirectoriesToClean(): string
     {
         return $this->directoriesToClean;
     }
@@ -89,7 +92,7 @@ class CleanerTask extends AbstractTask
      *
      * @param string $directoriesToClean directories to clean.
      */
-    public function setDirectoriesToClean($directoriesToClean)
+    public function setDirectoriesToClean(string $directoriesToClean): void
     {
         $this->directoriesToClean = $directoriesToClean;
     }
@@ -97,19 +100,20 @@ class CleanerTask extends AbstractTask
     /**
      * @return bool
      */
-    public function isAdvancedMode()
+    public function isAdvancedMode(): bool
     {
         return $this->advancedMode;
     }
+
     /**
      * @param bool $advancedMode
      */
-    public function setAvancedMode($advancedMode)
+    public function setAdvancedMode(bool $advancedMode): void
     {
-        $this->advancedMode = (bool)$advancedMode;
+        $this->advancedMode = $advancedMode;
     }
 
-    public function isValidPath($path)
+    public function isValidPath($path): bool
     {
         $path = trim($path, DIRECTORY_SEPARATOR);
         if ($this->isAdvancedMode()) {
@@ -123,15 +127,16 @@ class CleanerTask extends AbstractTask
         ;
     }
 
-    public function getAbsolutePath($path)
+    /**
+     * @param $path
+     * @return string
+     */
+    public function getAbsolutePath($path): string
     {
         if ($this->isAdvancedMode()) {
             return $path;
         }
-        if (class_exists(Environment::class)) {
-            return Environment::getPublicPath() . DIRECTORY_SEPARATOR . trim($path, DIRECTORY_SEPARATOR);
-        }
-        return Environment::getPublicPath() . '/' . $path;
+        return Environment::getPublicPath() . DIRECTORY_SEPARATOR . trim($path, DIRECTORY_SEPARATOR);
     }
 
     /**
