@@ -16,6 +16,7 @@ namespace SvenJuergens\Minicleaner\Tasks;
 
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\StringUtility;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 class CleanerTask extends AbstractTask
@@ -54,7 +55,7 @@ class CleanerTask extends AbstractTask
             foreach ($directories as $key => $directory) {
                 if ($this->isValidPath($directory)) {
                     $path = $this->getAbsolutePath($directory);
-                    $result = GeneralUtility::flushDirectory($path, true);
+                    $result = self::flushDirectory($path, true);
                     if ($result === false) {
                         trigger_error(
                             $GLOBALS['LANG']->sL($this->LLLPath . ':error.couldNotFlushDirectory'),
@@ -132,5 +133,38 @@ class CleanerTask extends AbstractTask
             return Environment::getPublicPath() . DIRECTORY_SEPARATOR . trim($path, DIRECTORY_SEPARATOR);
         }
         return Environment::getPublicPath() . '/' . $path;
+    }
+
+    /**
+     * Flushes a directory by first moving to a temporary resource, and then
+     * triggering the remove process. This way directories can be flushed faster
+     * to prevent race conditions on concurrent processes accessing the same directory.
+     *
+     *
+     * @param string $directory The directory to be renamed and flushed
+     * @param bool $keepOriginalDirectory Whether to only empty the directory and not remove it
+     * @return bool Whether the action was successful
+     */
+    public static function flushDirectory(string $directory, $keepOriginalDirectory = false): bool
+    {
+        $result = false;
+
+        if (is_link($directory)) {
+            // Avoid attempting to rename the symlink see #87367
+            $directory = realpath($directory);
+        }
+
+        if (is_dir($directory)) {
+            $temporaryDirectory = rtrim($directory, '/') . '.' . StringUtility::getUniqueId('remove');
+            if (rename($directory, $temporaryDirectory)) {
+                if ($keepOriginalDirectory) {
+                    GeneralUtility::mkdir($directory);
+                }
+                clearstatcache();
+                $result = GeneralUtility::rmdir($temporaryDirectory, true);
+            }
+        }
+
+        return $result;
     }
 }
