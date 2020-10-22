@@ -15,6 +15,7 @@ namespace SvenJuergens\Minicleaner\Tasks;
  */
 
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\StringUtility;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
@@ -45,9 +46,7 @@ class CleanerTask extends AbstractTask
     /**
      *  path to LocallangFile
      */
-    protected $LLLPath = 'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf';
-
-    public function execute()
+    public function execute(): bool
     {
         $directories = GeneralUtility::trimExplode(LF, $this->directoriesToClean, true);
 
@@ -58,14 +57,14 @@ class CleanerTask extends AbstractTask
                     $result = self::flushDirectory($path, true);
                     if ($result === false) {
                         trigger_error(
-                            $GLOBALS['LANG']->sL($this->LLLPath . ':error.couldNotFlushDirectory'),
+                            $this->getLanguageService()->sl('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.couldNotFlushDirectory'),
                             E_USER_DEPRECATED
                         );
                         return false;
                     }
                 } else {
                     trigger_error(
-                        $GLOBALS['LANG']->sL($this->LLLPath . ':error.pathNotFound'),
+                        $this->getLanguageService()->sl('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.pathNotFound'),
                         E_USER_DEPRECATED
                     );
                     return false;
@@ -166,5 +165,13 @@ class CleanerTask extends AbstractTask
         }
 
         return $result;
+    }
+
+    /**
+     * @return LanguageService
+     */
+    protected function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

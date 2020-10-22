@@ -15,6 +15,7 @@ namespace SvenJuergens\Minicleaner\Tasks;
  */
 
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\AbstractAdditionalFieldProvider;
@@ -51,10 +52,6 @@ class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
      */
     protected $blackList = 'typo3,typo3conf,typo3_src,typo3temp,uploads';
 
-    /**
-     *  path to LocallangFile
-     */
-    protected $LLLPath = 'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf';
 
     /**
      * Gets additional fields to render in the form to add/edit a task
@@ -84,15 +81,15 @@ class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
         $fieldName = $this->getFullFieldName('directoriesToClean');
         $additionalFields = [];
         $additionalFields[$fieldName] = [
-            'code' => '<textarea class="form-control" rows="10" cols="75" placeholder="' . $GLOBALS['LANG']->sL($this->LLLPath . ':scheduler.placeholderText') . '" name="tx_scheduler[' . $fieldName . ']">' . htmlspecialchars($taskInfo[$fieldName]) . '</textarea>',
-            'label' => $GLOBALS['LANG']->sL($this->LLLPath . ':scheduler.fieldLabel'),
+            'code' => '<textarea class="form-control" rows="10" cols="75" placeholder="' . $this->getLanguageService()->sL('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:scheduler.placeholderText') . '" name="tx_scheduler[' . $fieldName . ']">' . htmlspecialchars((string)$taskInfo[$fieldName]) . '</textarea>',
+            'label' => 'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:scheduler.fieldLabel',
             'cshKey' => '',
             'cshLabel' => $fieldName
         ];
         $fieldNameCheckbox = $this->getFullFieldName('advancedMode');
         $additionalFields[$fieldNameCheckbox] = [
             'code' => '<input type="checkbox" name="tx_scheduler[' . $fieldNameCheckbox . ']" ' . $checked . '  />',
-            'label' => $GLOBALS['LANG']->sL($this->LLLPath . ':scheduler.fieldLabelAdvancedMode'),
+            'label' => 'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:scheduler.fieldLabelAdvancedMode',
             'cshKey' => '_MOD_txminicleaner',
             'cshLabel' => $fieldNameCheckbox
         ];
@@ -126,7 +123,8 @@ class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
         ) {
             //@extensionScannerIgnoreLine
             $this->addMessage(
-                $GLOBALS['LANG']->sL($this->LLLPath . ':error.pathNotValid'),
+               $this->getLanguageService()->sL(
+                   'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.pathNotValid'),
                 FlashMessage::ERROR
             );
             $validInput = false;
@@ -176,5 +174,12 @@ class CleanerTaskDirectoryField  extends AbstractAdditionalFieldProvider
             && GeneralUtility::validPathStr($path)
             && !GeneralUtility::inList($this->blackList, $path)
         ;
+    }
+    /**
+     * @return LanguageService
+     */
+    protected function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }
