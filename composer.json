@@ -14,8 +14,8 @@
   ],
   "license": ["GPL-2.0-or-later"],
   "require": {
-    "typo3/cms-core": "^9.5.24 || ^10.4.11 || ^11.0",
-    "typo3/cms-scheduler": "^9.5 || ^10.4 || ^11.0"
+    "typo3/cms-core": "^9.5.28 || ^10.4.30 || ^11.5.11",
+    "typo3/cms-scheduler": "^9.5.28 || ^10.4.30 || ^11.5.11"
   },
   "autoload": {
     "psr-4": {
