@@ -15,17 +15,13 @@ $EM_CONF[$_EXTKEY] = [
     'description' => 'Scheduler Task for deleting files in configurable folders',
     'category' => 'be',
     'author' => 'Sven Juergens',
-    'author_email' => 't3@blue-side.de',
+    'author_email' => 't3YYYY@blue-side.de',
     'state' => 'stable',
-    'internal' => '',
-    'uploadfolder' => '0',
-    'createDirs' => '',
-    'clearCacheOnLoad' => 0,
-    'version' => '2.3.1',
+    'version' => '3.0.0',
     'constraints' => [
         'depends' => [
-            'typo3' => '9.5.24-11.9.99',
-            'scheduler' => '9.5.24-11.9.999',
+            'typo3' => '11.5.30-11.9.99',
+            'scheduler' => '11.5.30-11.9.999',
         ],
         'conflicts' => [
         ],

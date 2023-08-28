@@ -22,29 +22,31 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\StringUtility;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
+use Psr\Log\LoggerAwareTrait;
 
 class CleanerTask extends AbstractTask
 {
+
     /**
      * directories to clean
      *
      * @var string
      */
-    protected $directoriesToClean;
+    protected string $directoriesToClean;
 
     /**
-     * BlackList of Directories
+     * BlockList of Directories
      *
      * @var string
      */
-    protected $blockList = 'typo3,typo3conf,typo3_src,typo3temp,uploads';
+    protected string $blockList = 'typo3,typo3conf,typo3_src,typo3temp';
 
     /**
      * advancedMode
      *
      * @var bool
      */
-    protected $advancedMode = false;
+    protected bool $advancedMode = false;
 
     /**
      * @return bool
@@ -53,23 +55,19 @@ class CleanerTask extends AbstractTask
     {
         $directories = GeneralUtility::trimExplode(LF, $this->directoriesToClean, true);
 
-        if (\is_array($directories)) {
+        if (!empty($directories)) {
             foreach ($directories as $key => $directory) {
                 if ($this->isValidPath($directory)) {
                     $path = $this->getAbsolutePath($directory);
                     $result = self::flushDirectory($path, true);
                     if ($result === false) {
-                        trigger_error(
-                            $this->getLanguageService()->sl('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.couldNotFlushDirectory'),
-                            E_USER_DEPRECATED
-                        );
+                        $this->logger->error('minicleaner' . $this->getLanguageService()->sl('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.couldNotFlushDirectory'),
+                            ['path' => $path]);
                         return false;
                     }
                 } else {
-                    trigger_error(
-                        $this->getLanguageService()->sl('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.pathNotFound'),
-                        E_USER_DEPRECATED
-                    );
+                    $this->logger->error('minicleaner' . $this->getLanguageService()->sl('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.pathNotFound'),
+                        ['directory' => $directory]);
                     return false;
                 }
             }
@@ -149,7 +147,7 @@ class CleanerTask extends AbstractTask
      * @param bool $keepOriginalDirectory Whether to only empty the directory and not remove it
      * @return bool Whether the action was successful
      */
-    public static function flushDirectory(string $directory, $keepOriginalDirectory = false): bool
+    public static function flushDirectory(string $directory, bool $keepOriginalDirectory = false): bool
     {
         $result = false;
 
