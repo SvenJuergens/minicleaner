@@ -103,9 +103,6 @@ class CleanerTask extends AbstractTask
         return $this->advancedMode;
     }
 
-    /**
-     * @param bool $advancedMode
-     */
     public function setAdvancedMode(bool $advancedMode): void
     {
         $this->advancedMode = $advancedMode;
@@ -113,7 +110,7 @@ class CleanerTask extends AbstractTask
 
     public function isValidPath($path): bool
     {
-        $path = trim($path, DIRECTORY_SEPARATOR);
+        $path = trim((string) $path, DIRECTORY_SEPARATOR);
         if ($this->isAdvancedMode()) {
             return GeneralUtility::validPathStr($path);
         }
@@ -134,7 +131,7 @@ class CleanerTask extends AbstractTask
         if ($this->isAdvancedMode()) {
             return $path;
         }
-        return Environment::getPublicPath() . DIRECTORY_SEPARATOR . trim($path, DIRECTORY_SEPARATOR);
+        return Environment::getPublicPath() . DIRECTORY_SEPARATOR . trim((string) $path, DIRECTORY_SEPARATOR);
     }
 
     /**

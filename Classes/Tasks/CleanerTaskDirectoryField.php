@@ -142,7 +142,7 @@ class CleanerTaskDirectoryField extends AbstractAdditionalFieldProvider
         if (!$task instanceof CleanerTask) {
             throw new \InvalidArgumentException(
                 'Expected a task of type SvenJuergens\\Minicleaner\\Tasks\\CleanerTask,
-                 but got ' . htmlspecialchars(\get_class($task)),
+                 but got ' . htmlspecialchars($task::class),
                 1295012802
             );
         }
@@ -163,7 +163,7 @@ class CleanerTaskDirectoryField extends AbstractAdditionalFieldProvider
 
     public function isValidPath($path, $submittedData): bool
     {
-        $path = trim($path, DIRECTORY_SEPARATOR);
+        $path = trim((string) $path, DIRECTORY_SEPARATOR);
         if (isset($submittedData[$this->getFullFieldName('advancedMode')])) {
             return GeneralUtility::validPathStr($path);
         }
