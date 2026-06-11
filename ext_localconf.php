@@ -9,5 +9,5 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][\SvenJuergens\Mi
     'extension' => 'minicleaner',
     'title' => 'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:minicleaner.name',
     'description' => 'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:minicleaner.description',
-    'additionalFields' => \SvenJuergens\Minicleaner\Tasks\CleanerTaskDirectoryField::class
+    'additionalFields' => \SvenJuergens\Minicleaner\Tasks\CleanerTaskDirectoryField::class,
 ];

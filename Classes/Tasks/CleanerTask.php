@@ -22,11 +22,9 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\StringUtility;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
-use Psr\Log\LoggerAwareTrait;
 
 class CleanerTask extends AbstractTask
 {
-
     /**
      * directories to clean
      *
@@ -61,13 +59,17 @@ class CleanerTask extends AbstractTask
                     $path = $this->getAbsolutePath($directory);
                     $result = self::flushDirectory($path, true);
                     if ($result === false) {
-                        $this->logger->error('minicleaner' . $this->getLanguageService()->sl('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.couldNotFlushDirectory'),
-                            ['path' => $path]);
+                        $this->logger->error(
+                            'minicleaner' . $this->getLanguageService()->sL('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.couldNotFlushDirectory'),
+                            ['path' => $path]
+                        );
                         return false;
                     }
                 } else {
-                    $this->logger->error('minicleaner' . $this->getLanguageService()->sl('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.pathNotFound'),
-                        ['directory' => $directory]);
+                    $this->logger->error(
+                        'minicleaner' . $this->getLanguageService()->sL('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.pathNotFound'),
+                        ['directory' => $directory]
+                    );
                     return false;
                 }
             }
@@ -110,7 +112,7 @@ class CleanerTask extends AbstractTask
 
     public function isValidPath($path): bool
     {
-        $path = trim((string) $path, DIRECTORY_SEPARATOR);
+        $path = trim((string)$path, DIRECTORY_SEPARATOR);
         if ($this->isAdvancedMode()) {
             return GeneralUtility::validPathStr($path);
         }
@@ -131,7 +133,7 @@ class CleanerTask extends AbstractTask
         if ($this->isAdvancedMode()) {
             return $path;
         }
-        return Environment::getPublicPath() . DIRECTORY_SEPARATOR . trim((string) $path, DIRECTORY_SEPARATOR);
+        return Environment::getPublicPath() . DIRECTORY_SEPARATOR . trim((string)$path, DIRECTORY_SEPARATOR);
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace SvenJuergens\Minicleaner\Tasks;
 
 /**
@@ -15,15 +16,14 @@ namespace SvenJuergens\Minicleaner\Tasks;
  *
  * The TYPO3 project - inspiring people to share!
  */
-use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Localization\LanguageService;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\AbstractAdditionalFieldProvider;
 use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
-use TYPO3\CMS\Scheduler\Task\Enumeration\Action;
+use TYPO3\CMS\Scheduler\SchedulerManagementAction;
 
 /**
  * Original TASK taken from EXT:reports
@@ -68,7 +68,7 @@ class CleanerTaskDirectoryField extends AbstractAdditionalFieldProvider
     {
         $currentSchedulerModuleAction = $schedulerModule->getCurrentAction();
 
-        if ((string)$currentSchedulerModuleAction === Action::EDIT) {
+        if ($currentSchedulerModuleAction === SchedulerManagementAction::EDIT) {
             $taskInfo[$this->getFullFieldName('directoriesToClean')] = $task->getDirectoriesToClean();
             $taskInfo[$this->getFullFieldName('advancedMode')] = $task->isAdvancedMode();
             $checked = $task->isAdvancedMode() === true ? 'checked="checked" ' : '';
@@ -79,17 +79,17 @@ class CleanerTaskDirectoryField extends AbstractAdditionalFieldProvider
         $fieldName = $this->getFullFieldName('directoriesToClean');
         $additionalFields = [];
         $additionalFields[$fieldName] = [
-            'code' => '<textarea class="form-control" rows="10" cols="75" placeholder="' . $this->getLanguageService()->sL('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:scheduler.placeholderText') . '" name="tx_scheduler[' . $fieldName . ']">' . htmlspecialchars((string) ($taskInfo[$fieldName] ?? '')) . '</textarea>',
+            'code' => '<textarea class="form-control" rows="10" cols="75" placeholder="' . $this->getLanguageService()->sL('LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:scheduler.placeholderText') . '" name="tx_scheduler[' . $fieldName . ']">' . htmlspecialchars((string)($taskInfo[$fieldName] ?? '')) . '</textarea>',
             'label' => 'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:scheduler.fieldLabel',
             'cshKey' => '',
-            'cshLabel' => $fieldName
+            'cshLabel' => $fieldName,
         ];
         $fieldNameCheckbox = $this->getFullFieldName('advancedMode');
         $additionalFields[$fieldNameCheckbox] = [
             'code' => '<input type="checkbox" name="tx_scheduler[' . $fieldNameCheckbox . ']" ' . $checked . '  />',
             'label' => 'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:scheduler.fieldLabelAdvancedMode',
             'cshKey' => '_MOD_txminicleaner',
-            'cshLabel' => $fieldNameCheckbox
+            'cshLabel' => $fieldNameCheckbox,
         ];
         return $additionalFields;
     }
@@ -122,9 +122,9 @@ class CleanerTaskDirectoryField extends AbstractAdditionalFieldProvider
             //@extensionScannerIgnoreLine
             $this->addMessage(
                 $this->getLanguageService()->sL(
-                   'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.pathNotValid'
-               ),
-                AbstractMessage::ERROR
+                    'LLL:EXT:minicleaner/Resources/Private/Language/locallang.xlf:error.pathNotValid'
+                ),
+                ContextualFeedbackSeverity::ERROR
             );
             $validInput = false;
         }
@@ -147,7 +147,7 @@ class CleanerTaskDirectoryField extends AbstractAdditionalFieldProvider
             );
         }
         $task->setDirectoriesToClean((string)$submittedData[$this->getFullFieldName('directoriesToClean')]);
-        $task->setAdvancedMode((bool) ($submittedData[$this->getFullFieldName('advancedMode')] ?? false));
+        $task->setAdvancedMode((bool)($submittedData[$this->getFullFieldName('advancedMode')] ?? false));
     }
 
     /**
@@ -163,7 +163,7 @@ class CleanerTaskDirectoryField extends AbstractAdditionalFieldProvider
 
     public function isValidPath($path, $submittedData): bool
     {
-        $path = trim((string) $path, DIRECTORY_SEPARATOR);
+        $path = trim((string)$path, DIRECTORY_SEPARATOR);
         if (isset($submittedData[$this->getFullFieldName('advancedMode')])) {
             return GeneralUtility::validPathStr($path);
         }
